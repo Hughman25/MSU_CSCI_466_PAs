@@ -8,13 +8,16 @@ import link
 import threading
 from time import sleep
 
-##configuration parameters
+# configuration parameters
 router_queue_size = 0 #0 means unlimited
 simulation_time = 1 #give the network sufficient time to transfer all packets before quitting
 
 if __name__ == '__main__':
     object_L = [] #keeps track of objects, so we can kill their threads
-    
+
+    msg_S = "This is a very long message, of at least over 80 characters " \
+            "that contain very precious information, wouldn't you like to get your hands on it?"
+
     #create network nodes
     client = network.Host(1)
     object_L.append(client)
@@ -44,11 +47,17 @@ if __name__ == '__main__':
     for t in thread_L:
         t.start()
     
-    
+    packets = int(len(msg_S) / 50) + 1
+    print(packets)
+    start = 0
+    stop = 50
     #create some send events    
-    for i in range(3):
-        client.udt_send(2, 'Sample data %d' % i)
-    
+    for i in range(packets):
+        if stop > len(msg_S):
+            stop = len(msg_S)
+        client.udt_send(2, msg_S[start:stop])
+        start += 50
+        stop += 50
     
     #give the network sufficient time to transfer all packets before quitting
     sleep(simulation_time)
