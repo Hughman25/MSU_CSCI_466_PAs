@@ -61,8 +61,13 @@ class NetworkPacket:
         data_S = byte_S[NetworkPacket.dst_addr_S_length : ]
         return self(dst_addr, data_S)
 
-
-
+    #segment packets with an 8B offset
+    #data gram has Length, Id, Fragflag, and offset.
+    def fragment(self):
+        length = int(len(data_S))
+        id = None
+        fragFlag = None
+        offSet = None
 
 ## Implements a network host for receiving and transmitting data
 class Host:
