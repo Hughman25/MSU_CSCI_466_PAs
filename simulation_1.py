@@ -4,7 +4,7 @@ Date: 10/29/18
 simulation_1:
 '''
 
-import network
+import network_1
 import link_1
 import threading
 from time import sleep
@@ -20,11 +20,11 @@ if __name__ == '__main__':
             "that contain very precious information, wouldn't you like to get your hands on it?"
 
     #create network nodes
-    client = network.Host(1)
+    client = network_1.Host(1)
     object_L.append(client)
-    server = network.Host(2)
+    server = network_1.Host(2)
     object_L.append(server)
-    router_a = network.Router(name='A', intf_count=1, max_queue_size=router_queue_size)
+    router_a = network_1.Router(name='A', intf_count=1, max_queue_size=router_queue_size)
     object_L.append(router_a)
 
     #create a Link Layer to keep track of links between network nodes
@@ -47,7 +47,9 @@ if __name__ == '__main__':
 
     for t in thread_L:
         t.start()
-
+    for i in range(3):
+        client.udt_send(2, 'Sample data %d' % i)
+    '''
     packets = int(len(msg_S) / 50) + 1
     print(packets)
     start = 0
@@ -59,7 +61,7 @@ if __name__ == '__main__':
         client.udt_send(2, msg_S[start:stop])
         start += 50
         stop += 50
-
+    '''
     #give the network sufficient time to transfer all packets before quitting
     sleep(simulation_time)
 
