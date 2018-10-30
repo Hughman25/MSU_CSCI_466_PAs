@@ -5,7 +5,7 @@ simulation_1:
 '''
 
 import network
-import link
+import link_1
 import threading
 from time import sleep
 
@@ -28,13 +28,13 @@ if __name__ == '__main__':
     object_L.append(router_a)
 
     #create a Link Layer to keep track of links between network nodes
-    link_layer = link.LinkLayer()
+    link_layer = link_1.LinkLayer()
     object_L.append(link_layer)
 
     #add all the links
     #link parameters: from_node, from_intf_num, to_node, to_intf_num, mtu
-    link_layer.add_link(link.Link(client, 0, router_a, 0, 50))
-    link_layer.add_link(link.Link(router_a, 0, server, 0, 50))
+    link_layer.add_link(link_1.Link(client, 0, router_a, 0, 50))
+    link_layer.add_link(link_1.Link(router_a, 0, server, 0, 50))
 
 
     #start all the objects
