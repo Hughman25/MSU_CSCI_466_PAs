@@ -15,7 +15,8 @@ simulation_time = 1 #give the network sufficient time to transfer all packets be
 
 if __name__ == '__main__':
     object_L = [] #keeps track of objects, so we can kill their threads
-
+    msg_S = "This is a very long message, of at least over 80 characters " \
+            "that contain very precious information, wouldn't you like to get your hands on it?"
     #create network nodes
     client = network_2.Host(1)
     object_L.append(client)
@@ -48,8 +49,8 @@ if __name__ == '__main__':
 
     #create some send events
     for i in range(3):
-        client.udt_send(2, 'Sample data %d' % i)
-
+        print("i", i)
+        client.udt_send(2, msg_S)
 
     #give the network sufficient time to transfer all packets before quitting
     sleep(simulation_time)
