@@ -64,6 +64,7 @@ class NetworkPacket:
     #segment packets with an 8B offset
     #segments are 1500 bytes long.
     #A datagram has the fields: length, id, fragflag, and offset.
+    '''
     def fragment(self):
         length = int(len(data_S) / 1500) + 1
         id = 0
@@ -81,7 +82,7 @@ class NetworkPacket:
                 stop   += 1500
             start += 1500
             stop  += 1500
-
+    '''
 
 ## Implements a network host for receiving and transmitting data
 class Host:
@@ -101,9 +102,20 @@ class Host:
     # @param dst_addr: destination address for the packet
     # @param data_S: data being transmitted to the network layer
     def udt_send(self, dst_addr, data_S):
-        p = NetworkPacket(dst_addr, data_S)
-        self.out_intf_L[0].put(p.to_byte_S()) #send packets always enqueued successfully
-        print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, p, self.out_intf_L[0].mtu))
+        mtu_I = self.out_intf_L[0].mtu
+        packets = int(len(data_S) / mtu_I) + 1
+        start = 0
+        stop  = mtu_I
+        print("mtu_I",mtu_I)
+        print(packets)
+        for i in range(packets):
+            if stop > len(data_S):
+                stop = len(data_S)
+            p = NetworkPacket(dst_addr, data_S[start:stop]) #form a new packet that is equal to mtu
+            self.out_intf_L[0].put(p.to_byte_S()) #send packets always enqueued successfully
+            print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, p, self.out_intf_L[0].mtu))
+            start += mtu_I
+            stop  += mtu_I
 
     ## receive packet from the network layer
     def udt_receive(self):
@@ -121,7 +133,6 @@ class Host:
             if(self.stop):
                 print (threading.currentThread().getName() + ': Ending')
                 return
-
 
 
 ## Implements a multi-interface router described in class

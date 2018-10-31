@@ -82,7 +82,7 @@ class Host:
     # @param dst_addr: destination address for the packet
     # @param data_S: data being transmitted to the network layer
     def udt_send(self, dst_addr, data_S):
-        packets = int(len(data_S) / 50) + 1 
+        packets = int(len(data_S) / 50) + 1
         start = 0
         stop  = 50
         print(packets)
@@ -111,7 +111,6 @@ class Host:
             if(self.stop):
                 print (threading.currentThread().getName() + ': Ending')
                 return
-
 
 
 ## Implements a multi-interface router described in class
