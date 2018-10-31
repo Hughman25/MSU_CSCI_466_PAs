@@ -47,9 +47,8 @@ if __name__ == '__main__':
 
     for t in thread_L:
         t.start()
-    for i in range(3):
-        print("i", i)
-        client.udt_send(2, msg_S)
+
+    client.udt_send(2, msg_S)
     '''
     packets = int(len(msg_S) / 50) + 1
     print(packets)
