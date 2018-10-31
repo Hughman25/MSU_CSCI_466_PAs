@@ -62,12 +62,26 @@ class NetworkPacket:
         return self(dst_addr, data_S)
 
     #segment packets with an 8B offset
-    #data gram has Length, Id, Fragflag, and offset.
+    #segments are 1500 bytes long.
+    #A datagram has the fields: length, id, fragflag, and offset.
     def fragment(self):
-        length = int(len(data_S))
-        id = None
-        fragFlag = None
-        offSet = None
+        length = int(len(data_S) / 1500) + 1
+        id = 0
+        fragFlag = 1
+        start = 0
+        stop  = 1500
+        offSet = 185
+
+        for i in range(length):
+            if  start > stop:
+                offSet += 185
+                p = NetworkPacket(dst_addr, data_S[start:stop]) #form a new packet that is equal to mtu
+                self.out_intf_L[0].put(p.to_byte_S()) #send packets always enqueued successfully
+                print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, p, self.out_intf_L[0].mtu))
+                stop   += 1500
+            start += 1500
+            stop  += 1500
+
 
 ## Implements a network host for receiving and transmitting data
 class Host:
