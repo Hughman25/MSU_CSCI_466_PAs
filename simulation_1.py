@@ -49,19 +49,7 @@ if __name__ == '__main__':
         t.start()
 
     client.udt_send(2, msg_S)
-    '''
-    packets = int(len(msg_S) / 50) + 1
-    print(packets)
-    start = 0
-    stop = 50
-    #create some send events
-    for i in range(packets):
-        if stop > len(msg_S):
-            stop = len(msg_S)
-        client.udt_send(2, msg_S[start:stop])
-        start += 50
-        stop += 50
-    '''
+
     #give the network sufficient time to transfer all packets before quitting
     sleep(simulation_time)
 
