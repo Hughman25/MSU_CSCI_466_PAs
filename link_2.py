@@ -4,7 +4,6 @@ Date: 10/29/18
 Link_2:
 '''
 
-
 import queue
 import threading
 
