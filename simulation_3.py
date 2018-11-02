@@ -4,8 +4,8 @@ Date: 10/29/18
 simulation_3:
 '''
 
-import network
-import link
+import network_3
+import link_3
 import threading
 from time import sleep
 
@@ -21,10 +21,10 @@ if __name__ == '__main__':
     msg_S = "This is a very long message, of at least over 80 characters " \
             "that contain very precious information, wouldn't you like to get your hands on it?"
     #create network nodes
-    client1 = network.Host(1)
-    client2 = network.Host(2)
-    server1 = network.Host(3)
-    server2 = network.Host(4)
+    client1 = network_3.Host(1)
+    client2 = network_3.Host(2)
+    server1 = network_3.Host(3)
+    server2 = network_3.Host(4)
     #add nodes to list
     object_L.append(client1)
     object_L.append(client2)
@@ -36,10 +36,10 @@ if __name__ == '__main__':
     routeTableC = {'outInterface1':0, 'outInterface2':0}
     routeTableD = {'outInterface1':0, 'outInterface2':1}
     #create routers
-    router_a = network.Router(name='A', intf_count=2, max_queue_size=router_queue_size, routeTableA)
-    router_b = network.Router(name='B', intf_count=1, max_queue_size=router_queue_size, routeTableB)
-    router_c = network.Router(name='C', intf_count=1, max_queue_size=router_queue_size, routeTableC)
-    router_d = network.Router(name='D', intf_count=2, max_queue_size=router_queue_size, routeTableD)
+    router_a = network_3.Router(routeTableA, name='A', intf_count=2,max_queue_size=router_queue_size)
+    router_b = network_3.Router(routeTableB, name='B', intf_count=1,max_queue_size=router_queue_size)
+    router_c = network_3.Router(routeTableC, name='C', intf_count=1,max_queue_size=router_queue_size)
+    router_d = network_3.Router(routeTableD, name='D', intf_count=2,max_queue_size=router_queue_size)
     #add routers to list
     object_L.append(router_a)
     object_L.append(router_b)
@@ -48,29 +48,27 @@ if __name__ == '__main__':
 
 
     #create a Link Layer to keep track of links between network nodes
-    link_layer = link.LinkLayer()
+    link_layer = link_3.LinkLayer()
     object_L.append(link_layer)
 
     #add all the links
     #link parameters: from_node, from_intf_num, to_node, to_intf_num, mtu
     #add link between host1 and A
-    link_layer.add_link(link.Link(client1, 0, router_a, 0, 50))
+    link_layer.add_link(link_3.Link(client1, 0, router_a, 0, 50))
     #add link between host2 and A
-    link_layer.add_link(link.Link(client2, 0, router_a, 1, 50))
+    link_layer.add_link(link_3.Link(client2, 0, router_a, 1, 50))
     #add link between A interface 0 to B interface 0
-    link_layer.add_link(link.Link(router_a, 0, router_b, 0, 50))
+    link_layer.add_link(link_3.Link(router_a, 0, router_b, 0, 50))
     #add link between A interface 1 to C interface 0
-    link_layer.add_link(link.Link(router_a, 1, router_c, 0, 50))
+    link_layer.add_link(link_3.Link(router_a, 1, router_c, 0, 50))
     #add link between B interface 0 to D interface 0
-    link_layer.add_link(link.Link(router_b, 0, router_d, 0, 50))
+    link_layer.add_link(link_3.Link(router_b, 0, router_d, 0, 50))
     #add link between C interface 0 to D interface 1
-    link_layer.add_link(link.Link(router_c, 0, router_d, 1, 50))
+    link_layer.add_link(link_3.Link(router_c, 0, router_d, 1, 50))
     #add link between D interface 0 to host3 interface 0
-    link_layer.add_link(link.Link(router_d, 0, server1, 0, 50))
+    link_layer.add_link(link_3.Link(router_d, 0, server1, 0, 50))
     #add link between D interface 1 to host4 interface 0
-    link_layer.add_link(link.Link(router_d, 1, router_2, 0, 50))
-
-
+    link_layer.add_link(link_3.Link(router_d, 1, server2, 0, 50))
 
 
 
@@ -94,8 +92,8 @@ if __name__ == '__main__':
 
 
     #create some send events. Source,destination,message
-    client1.udt_send(1,3,msg)
-    client2.udt_send(2,4,msg)
+    client1.udt_send(1,3,msg_S)
+    client2.udt_send(2,4,msg_S)
 
 
     #give the network sufficient time to transfer all packets before quitting

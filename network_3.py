@@ -51,7 +51,7 @@ class NetworkPacket:
 
     ## convert packet to a byte string for transmission over links
     def to_byte_S(self):
-        byte_S = str(self.dst_addr).zfill(self.dst_addr_S_length)
+        byte_S = str(self.src_addr).zfill(self.dst_addr).zfill(self.dst_addr_S_length)
         byte_S += self.data_S
         return byte_S
 
@@ -62,6 +62,8 @@ class NetworkPacket:
         dst_addr = int(byte_S[NetworkPacket.src_addr_S_length : NetworkPacket.dst_addr_S_length])
         data_S = byte_S[NetworkPacket.dst_addr_S_length : ]
         return self(dst_addr, data_S)
+
+    #extract source address from byte string
     @classmethod
     def getSrc(self, byte_S):
         src_addr = int(byte_S[0 : NetworkPacket.src_addr_S_length])
@@ -115,7 +117,7 @@ class Router:
     ##@param name: friendly router name for debugging
     # @param intf_count: the number of input and output interfaces
     # @param max_queue_size: max queue length (passed to Interface)
-    def __init__(self, name, intf_count, max_queue_size, routeTable):
+    def __init__(self, routeTable, name, intf_count, max_queue_size):
         self.stop = False #for thread termination
         self.name = name
         #create a list of interfaces
@@ -140,6 +142,7 @@ class Router:
                     p = NetworkPacket.from_byte_S(pkt_S) #parse a packet out
                     # HERE you will need to implement a lookup into the
                     # forwarding table to find the appropriate outgoing interface
+                    #get source address, either 1 or two
                     srcAddress = NetworkPacket.getSrc(pkt_S)
                     if(srcAddress == 1):
                         outInterface = self.routeTable.get("outInterface1")
