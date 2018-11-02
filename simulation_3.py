@@ -51,25 +51,25 @@ if __name__ == '__main__':
     #create a Link Layer to keep track of links between network nodes
     link_layer = link_3.LinkLayer()
     object_L.append(link_layer)
-
+    print(len(msg_S))
     #add all the links
     #link parameters: from_node, from_intf_num, to_node, to_intf_num, mtu
     #add link between host1 and A
-    link_layer.add_link(link_3.Link(client1, 0, router_a, 0, 50))
+    link_layer.add_link(link_3.Link(client1, 0, router_a, 0, 147))
     #add link between host2 and A
-    link_layer.add_link(link_3.Link(client2, 0, router_a, 1, 50))
+    link_layer.add_link(link_3.Link(client2, 0, router_a, 1, 147))
     #add link between A interface 0 to B interface 0
-    link_layer.add_link(link_3.Link(router_a, 0, router_b, 0, 50))
+    link_layer.add_link(link_3.Link(router_a, 0, router_b, 0, 147))
     #add link between A interface 1 to C interface 0
-    link_layer.add_link(link_3.Link(router_a, 1, router_c, 0, 50))
+    link_layer.add_link(link_3.Link(router_a, 1, router_c, 0, 147))
     #add link between B interface 0 to D interface 0
-    link_layer.add_link(link_3.Link(router_b, 0, router_d, 0, 50))
+    link_layer.add_link(link_3.Link(router_b, 0, router_d, 0, 147))
     #add link between C interface 0 to D interface 1
-    link_layer.add_link(link_3.Link(router_c, 0, router_d, 1, 50))
+    link_layer.add_link(link_3.Link(router_c, 0, router_d, 1, 147))
     #add link between D interface 0 to host3 interface 0
-    link_layer.add_link(link_3.Link(router_d, 0, server1, 0, 50))
+    link_layer.add_link(link_3.Link(router_d, 0, server1, 0, 147))
     #add link between D interface 1 to host4 interface 0
-    link_layer.add_link(link_3.Link(router_d, 1, server2, 0, 50))
+    link_layer.add_link(link_3.Link(router_d, 1, server2, 0, 147))
 
 
 
