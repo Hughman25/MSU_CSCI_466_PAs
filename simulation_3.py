@@ -31,10 +31,11 @@ if __name__ == '__main__':
     object_L.append(server1)
     object_L.append(server2)
     #create router forwarding tables
-    routeTableA = {'outInterface1':0, 'outInterface2':1}
-    routeTableB = {'outInterface1':0, 'outInterface2':0}
-    routeTableC = {'outInterface1':0, 'outInterface2':0}
-    routeTableD = {'outInterface1':0, 'outInterface2':1}
+    #destination:outInterface
+    routeTableA = {"3":0, "4":1}
+    routeTableB = {"3":0}
+    routeTableC = {"3":0}
+    routeTableD = {"3":0, "4":1}
     #create routers
     router_a = network_3.Router(routeTableA, name='A', intf_count=2,max_queue_size=router_queue_size)
     router_b = network_3.Router(routeTableB, name='B', intf_count=1,max_queue_size=router_queue_size)

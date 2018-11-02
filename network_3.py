@@ -143,12 +143,17 @@ class Router:
                     # HERE you will need to implement a lookup into the
                     # forwarding table to find the appropriate outgoing interface
                     #get source address, either 1 or two
+                    string_data = p.to_byte_S()
+                    addr = string_data[5:10]
+                    outInterface = self.routeTable.get(addr)
+                    '''
                     srcAddress = NetworkPacket.getSrc(pkt_S)
                     if(srcAddress == 1):
                         outInterface = self.routeTable.get("outInterface1")
                     elif(srcAddress == 2):
                         outInterface = self.routeTable.get("outInterface2")
                     self.out_intf_L[outInterface].put(p.to_byte_S(), True)
+                    '''
                     print('%s: forwarding packet "%s" from interface %d to %d with mtu %d' \
                         % (self, p, i, i, self.out_intf_L[outInterface].mtu))
             except queue.Full:
