@@ -13,6 +13,9 @@ from time import sleep
 router_queue_size = 0 #0 means unlimited
 simulation_time = 1 #give the network sufficient time to transfer all packets before quitting
 
+
+
+
 if __name__ == '__main__':
     object_L = [] #keeps track of objects, so we can kill their threads
     msg_S = "This is a very long message, of at least over 80 characters " \
@@ -27,11 +30,16 @@ if __name__ == '__main__':
     object_L.append(client2)
     object_L.append(server1)
     object_L.append(server2)
+    #create router forwarding tables
+    routeTableA = {'outInterface1':0, 'outInterface2':1}
+    routeTableB = {'outInterface1':0, 'outInterface2':0}
+    routeTableC = {'outInterface1':0, 'outInterface2':0}
+    routeTableD = {'outInterface1':0, 'outInterface2':1}
     #create routers
-    router_a = network.Router(name='A', intf_count=2, max_queue_size=router_queue_size)
-    router_b = network.Router(name='B', intf_count=1, max_queue_size=router_queue_size)
-    router_c = network.Router(name='C', intf_count=1, max_queue_size=router_queue_size)
-    router_d = network.Router(name='D', intf_count=2, max_queue_size=router_queue_size)
+    router_a = network.Router(name='A', intf_count=2, max_queue_size=router_queue_size, routeTableA)
+    router_b = network.Router(name='B', intf_count=1, max_queue_size=router_queue_size, routeTableB)
+    router_c = network.Router(name='C', intf_count=1, max_queue_size=router_queue_size, routeTableC)
+    router_d = network.Router(name='D', intf_count=2, max_queue_size=router_queue_size, routeTableD)
     #add routers to list
     object_L.append(router_a)
     object_L.append(router_b)
@@ -85,9 +93,9 @@ if __name__ == '__main__':
         t.start()
 
 
-    #create some send events
-    client1.udt_send(2, msg)
-    client2.udt_send(3, msg)
+    #create some send events. Source,destination,message
+    client1.udt_send(1,3,msg)
+    client2.udt_send(2,4,msg)
 
 
     #give the network sufficient time to transfer all packets before quitting

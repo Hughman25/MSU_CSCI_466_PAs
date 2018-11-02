@@ -36,10 +36,12 @@ class Interface:
 class NetworkPacket:
     ## packet encoding lengths
     dst_addr_S_length = 5
-
+    src_addr_S_length = 5
     ##@param dst_addr: address of the destination host
+    # @param src_addr: address of the source host
     # @param data_S: packet payload
-    def __init__(self, dst_addr, data_S):
+    def __init__(self, src_addr, dst_addr, data_S):
+        self.src_addr = src_addr
         self.dst_addr = dst_addr
         self.data_S = data_S
 
@@ -57,12 +59,13 @@ class NetworkPacket:
     # @param byte_S: byte string representation of the packet
     @classmethod
     def from_byte_S(self, byte_S):
-        dst_addr = int(byte_S[0 : NetworkPacket.dst_addr_S_length])
+        dst_addr = int(byte_S[NetworkPacket.src_addr_S_length : NetworkPacket.dst_addr_S_length])
         data_S = byte_S[NetworkPacket.dst_addr_S_length : ]
         return self(dst_addr, data_S)
-
-
-
+    @classmethod
+    def getSrc(self, byte_S):
+        src_addr = int(byte_S[0 : NetworkPacket.src_addr_S_length])
+        return self(src_addr)
 
 ## Implements a network host for receiving and transmitting data
 class Host:
@@ -81,8 +84,9 @@ class Host:
     ## create a packet and enqueue for transmission
     # @param dst_addr: destination address for the packet
     # @param data_S: data being transmitted to the network layer
-    def udt_send(self, dst_addr, data_S):
-        p = NetworkPacket(dst_addr, data_S)
+    # @param src_addr: source address for the packet
+    def udt_send(self, src_addr, dst_addr, data_S):
+        p = NetworkPacket(src_addr,dst_addr, data_S)
         self.out_intf_L[0].put(p.to_byte_S()) #send packets always enqueued successfully
         print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, p, self.out_intf_L[0].mtu))
 
@@ -111,12 +115,13 @@ class Router:
     ##@param name: friendly router name for debugging
     # @param intf_count: the number of input and output interfaces
     # @param max_queue_size: max queue length (passed to Interface)
-    def __init__(self, name, intf_count, max_queue_size):
+    def __init__(self, name, intf_count, max_queue_size, routeTable):
         self.stop = False #for thread termination
         self.name = name
         #create a list of interfaces
         self.in_intf_L = [Interface(max_queue_size) for _ in range(intf_count)]
         self.out_intf_L = [Interface(max_queue_size) for _ in range(intf_count)]
+        self.routeTable = routeTable
 
     ## called when printing the object
     def __str__(self):
@@ -128,17 +133,21 @@ class Router:
         for i in range(len(self.in_intf_L)):
             pkt_S = None
             try:
-                #get packet from interface i
+                #get packet from interface x=0 or x=1
                 pkt_S = self.in_intf_L[i].get()
                 #if packet exists make a forwarding decision
                 if pkt_S is not None:
                     p = NetworkPacket.from_byte_S(pkt_S) #parse a packet out
                     # HERE you will need to implement a lookup into the
                     # forwarding table to find the appropriate outgoing interface
-                    # for now we assume the outgoing interface is also i
-                    self.out_intf_L[i].put(p.to_byte_S(), True)
+                    srcAddress = NetworkPacket.getSrc(pkt_S)
+                    if(srcAddress == 1):
+                        outInterface = self.routeTable.get("outInterface1")
+                    elif(srcAddress == 2):
+                        outInterface = self.routeTable.get("outInterface2")
+                    self.out_intf_L[outInterface].put(p.to_byte_S(), True)
                     print('%s: forwarding packet "%s" from interface %d to %d with mtu %d' \
-                        % (self, p, i, i, self.out_intf_L[i].mtu))
+                        % (self, p, i, i, self.out_intf_L[outInterface].mtu))
             except queue.Full:
                 print('%s: packet "%s" lost on interface %d' % (self, p, i))
                 pass
