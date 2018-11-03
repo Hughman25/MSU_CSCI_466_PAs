@@ -10,6 +10,7 @@ import threading
 
 ## An abstraction of a link between router interfaces
 class Link:
+    temp = 0
 
     ## creates a link between two objects by looking up and linking node interfaces.
     # @param from_node: node from which data will be transfered
@@ -38,6 +39,7 @@ class Link:
         pkt_S = self.in_intf.get()
         if pkt_S is None:
             return #return if no packet to transfer
+        self.temp += 1
         if len(pkt_S) > self.out_intf.mtu:
             print('%s: packet "%s" length greater then link mtu (%d)' % (self, pkt_S, self.out_intf.mtu))
             return #return without transmitting if packet too big
