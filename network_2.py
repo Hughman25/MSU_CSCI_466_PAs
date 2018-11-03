@@ -36,12 +36,16 @@ class Interface:
 class NetworkPacket:
     ## packet encoding lengths
     dst_addr_S_length = 5
+    ID_length = 6
+    flag_length = 7
 
     ##@param dst_addr: address of the destination host
     # @param data_S: packet payload
-    def __init__(self, dst_addr, data_S):
+    def __init__(self, dst_addr, data_S, ID, flag):
         self.dst_addr = dst_addr
         self.data_S = data_S
+        self.ID = ID
+        self.flag = flag
 
     ## called when printing the object
     def __str__(self):
@@ -50,6 +54,8 @@ class NetworkPacket:
     ## convert packet to a byte string for transmission over links
     def to_byte_S(self):
         byte_S = str(self.dst_addr).zfill(self.dst_addr_S_length)
+        byte_S += str(self.ID)
+        byte_S += str(self.flag)
         byte_S += self.data_S
         return byte_S
 
@@ -58,8 +64,10 @@ class NetworkPacket:
     @classmethod
     def from_byte_S(self, byte_S):
         dst_addr = int(byte_S[0 : NetworkPacket.dst_addr_S_length])
-        data_S = byte_S[NetworkPacket.dst_addr_S_length : ]
-        return self(dst_addr, data_S)
+        ID = int(byte_S[NetworkPacket.dst_addr_S_length : NetworkPacket.ID_length])
+        flag = int(byte_S[NetworkPacket.ID_length : NetworkPacket.flag_length])
+        data_S = byte_S[NetworkPacket.flag_length : ]
+        return self(dst_addr, data_S, ID, flag)
 
     #segment packets with an 8B offset
     #segments are 1500 bytes long.
@@ -93,6 +101,7 @@ class Host:
         self.in_intf_L = [Interface()]
         self.out_intf_L = [Interface()]
         self.stop = False #for thread termination
+        self.ID = 0
 
     ## called when printing the object
     def __str__(self):
@@ -102,16 +111,26 @@ class Host:
     # @param dst_addr: destination address for the packet
     # @param data_S: data being transmitted to the network layer
     def udt_send(self, dst_addr, data_S):
-        mtu_I = self.out_intf_L[0].mtu
-        packets = int(len(data_S) / mtu_I) + 1
+        mtu_I = self.out_intf_L[0].mtu - NetworkPacket.flag_length #for ID and flag
+
+        if len(data_S) > mtu_I:
+            packets = int(len(data_S) / mtu_I) + 1
+        else:
+            packets = 1
         start = 0
+        self.ID += 1
         stop  = mtu_I
         print("mtu_I",mtu_I)
         print(packets)
+        
         for i in range(packets):
             if stop > len(data_S):
                 stop = len(data_S)
-            p = NetworkPacket(dst_addr, data_S[start:stop]) #form a new packet that is equal to mtu
+            if i != packets - 1:
+                p = NetworkPacket(dst_addr, data_S[start:stop], self.ID, 1) #form a new packet that is equal to mtu
+            else:
+                 p = NetworkPacket(dst_addr, data_S[start:stop], self.ID, 0) #form a new packet that is equal to mtu
+                 
             self.out_intf_L[0].put(p.to_byte_S()) #send packets always enqueued successfully
             print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, p, self.out_intf_L[0].mtu))
             start += mtu_I
@@ -162,13 +181,36 @@ class Router:
                 pkt_S = self.in_intf_L[i].get()
                 #if packet exists make a forwarding decision
                 if pkt_S is not None:
-                    p = NetworkPacket.from_byte_S(pkt_S) #parse a packet out
                     # HERE you will need to implement a lookup into the
                     # forwarding table to find the appropriate outgoing interface
                     # for now we assume the outgoing interface is also i
-                    self.out_intf_L[i].put(p.to_byte_S(), True)
+                    mtu_I = self.out_intf_L[i].mtu - NetworkPacket.flag_length #for ID and flag
+                    data_S = pkt_S[NetworkPacket.flag_length : ]
+                    dst_addr = pkt_S[0 : NetworkPacket.dst_addr_S_length]
+                    ID = pkt_S[NetworkPacket.dst_addr_S_length : NetworkPacket.ID_length]
+                    if len(data_S) > mtu_I:
+                        packets = int(len(data_S) / mtu_I) + 1
+                    else:
+                        packets = 1
+                    start = 0
+                    stop  = mtu_I
+                    print("mtu_I",mtu_I)
+                    print(packets)
+                    
+                    for i in range(packets):
+                        if stop > len(data_S):
+                            stop = len(data_S)
+                        if i != packets - 1:
+                            p = NetworkPacket(dst_addr, data_S[start:stop], ID, 1) #form a new packet that is equal to mtu
+                        else:
+                             p = NetworkPacket(dst_addr, data_S[start:stop], ID, 0) #form a new packet that is equal to mtu
+                             
+                        self.out_intf_L[0].put(p.to_byte_S(), True) #send packets always enqueued successfully
+                        print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, p, self.out_intf_L[0].mtu))
+                        start += mtu_I
+                        stop  += mtu_I
                     print('%s: forwarding packet "%s" from interface %d to %d with mtu %d' \
-                        % (self, p, i, i, self.out_intf_L[i].mtu))
+                        % (self, p, i, i, self.out_intf_L[0].mtu))
             except queue.Full:
                 print('%s: packet "%s" lost on interface %d' % (self, p, i))
                 pass
