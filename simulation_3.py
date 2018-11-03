@@ -11,9 +11,7 @@ from time import sleep
 
 ##configuration parameters
 router_queue_size = 0 #0 means unlimited
-simulation_time = 1 #give the network sufficient time to transfer all packets before quitting
-
-
+simulation_time = 2 #give the network sufficient time to transfer all packets before quitting
 
 
 if __name__ == '__main__':
@@ -31,10 +29,11 @@ if __name__ == '__main__':
     object_L.append(server1)
     object_L.append(server2)
     #create router forwarding tables
-    routeTableA = {'outInterface1':0, 'outInterface2':1}
-    routeTableB = {'outInterface1':0, 'outInterface2':0}
-    routeTableC = {'outInterface1':0, 'outInterface2':0}
-    routeTableD = {'outInterface1':0, 'outInterface2':1}
+    #destination:outInterface
+    routeTableA = {3:0, 4:1}
+    routeTableB = {3:0}
+    routeTableC = {4:0}
+    routeTableD = {3:0, 4:1}
     #create routers
     router_a = network_3.Router(routeTableA, name='A', intf_count=2,max_queue_size=router_queue_size)
     router_b = network_3.Router(routeTableB, name='B', intf_count=1,max_queue_size=router_queue_size)
@@ -50,25 +49,25 @@ if __name__ == '__main__':
     #create a Link Layer to keep track of links between network nodes
     link_layer = link_3.LinkLayer()
     object_L.append(link_layer)
-
+    print(len(msg_S))
     #add all the links
     #link parameters: from_node, from_intf_num, to_node, to_intf_num, mtu
     #add link between host1 and A
-    link_layer.add_link(link_3.Link(client1, 0, router_a, 0, 50))
+    link_layer.add_link(link_3.Link(client1, 0, router_a, 0, 152))
     #add link between host2 and A
-    link_layer.add_link(link_3.Link(client2, 0, router_a, 1, 50))
+    link_layer.add_link(link_3.Link(client2, 0, router_a, 1, 152))
     #add link between A interface 0 to B interface 0
-    link_layer.add_link(link_3.Link(router_a, 0, router_b, 0, 50))
+    link_layer.add_link(link_3.Link(router_a, 0, router_b, 0, 152))
     #add link between A interface 1 to C interface 0
-    link_layer.add_link(link_3.Link(router_a, 1, router_c, 0, 50))
+    link_layer.add_link(link_3.Link(router_a, 1, router_c, 0, 152))
     #add link between B interface 0 to D interface 0
-    link_layer.add_link(link_3.Link(router_b, 0, router_d, 0, 50))
+    link_layer.add_link(link_3.Link(router_b, 0, router_d, 0, 152))
     #add link between C interface 0 to D interface 1
-    link_layer.add_link(link_3.Link(router_c, 0, router_d, 1, 50))
+    link_layer.add_link(link_3.Link(router_c, 0, router_d, 1, 152))
     #add link between D interface 0 to host3 interface 0
-    link_layer.add_link(link_3.Link(router_d, 0, server1, 0, 50))
+    link_layer.add_link(link_3.Link(router_d, 0, server1, 0, 152))
     #add link between D interface 1 to host4 interface 0
-    link_layer.add_link(link_3.Link(router_d, 1, server2, 0, 50))
+    link_layer.add_link(link_3.Link(router_d, 1, server2, 0, 152))
 
 
 
@@ -94,7 +93,6 @@ if __name__ == '__main__':
     #create some send events. Source,destination,message
     client1.udt_send(1,3,msg_S)
     client2.udt_send(2,4,msg_S)
-
 
     #give the network sufficient time to transfer all packets before quitting
     sleep(simulation_time)

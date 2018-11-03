@@ -37,6 +37,7 @@ class NetworkPacket:
     ## packet encoding lengths
     dst_addr_S_length = 5
     src_addr_S_length = 5
+    end_headers_length = 10
     ##@param dst_addr: address of the destination host
     # @param src_addr: address of the source host
     # @param data_S: packet payload
@@ -51,7 +52,8 @@ class NetworkPacket:
 
     ## convert packet to a byte string for transmission over links
     def to_byte_S(self):
-        byte_S = str(self.src_addr).zfill(self.dst_addr).zfill(self.dst_addr_S_length)
+        byte_S = str(self.src_addr).zfill(self.src_addr_S_length)
+        byte_S += str(self.dst_addr).zfill(self.dst_addr_S_length)
         byte_S += self.data_S
         return byte_S
 
@@ -59,15 +61,11 @@ class NetworkPacket:
     # @param byte_S: byte string representation of the packet
     @classmethod
     def from_byte_S(self, byte_S):
-        dst_addr = int(byte_S[NetworkPacket.src_addr_S_length : NetworkPacket.dst_addr_S_length])
-        data_S = byte_S[NetworkPacket.dst_addr_S_length : ]
-        return self(dst_addr, data_S)
-
-    #extract source address from byte string
-    @classmethod
-    def getSrc(self, byte_S):
+        dst_addr = int(byte_S[NetworkPacket.src_addr_S_length : NetworkPacket.dst_addr_S_length + 5])
         src_addr = int(byte_S[0 : NetworkPacket.src_addr_S_length])
-        return self(src_addr)
+        data_S = byte_S[NetworkPacket.end_headers_length: ]
+        return self(src_addr, dst_addr, data_S)
+
 
 ## Implements a network host for receiving and transmitting data
 class Host:
@@ -88,6 +86,8 @@ class Host:
     # @param data_S: data being transmitted to the network layer
     # @param src_addr: source address for the packet
     def udt_send(self, src_addr, dst_addr, data_S):
+        mtu_I = self.out_intf_L[0].mtu - NetworkPacket.end_headers_length
+
         p = NetworkPacket(src_addr,dst_addr, data_S)
         self.out_intf_L[0].put(p.to_byte_S()) #send packets always enqueued successfully
         print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, p, self.out_intf_L[0].mtu))
@@ -143,12 +143,11 @@ class Router:
                     # HERE you will need to implement a lookup into the
                     # forwarding table to find the appropriate outgoing interface
                     #get source address, either 1 or two
-                    srcAddress = NetworkPacket.getSrc(pkt_S)
-                    if(srcAddress == 1):
-                        outInterface = self.routeTable.get("outInterface1")
-                    elif(srcAddress == 2):
-                        outInterface = self.routeTable.get("outInterface2")
-                    self.out_intf_L[outInterface].put(p.to_byte_S(), True)
+                    string_data = p.to_byte_S()
+                    addr = string_data[5:10]
+                    addr = int(addr)
+                    outInterface = self.routeTable.get(addr)
+                    self.out_intf_L[outInterface].put(p.to_byte_S())
                     print('%s: forwarding packet "%s" from interface %d to %d with mtu %d' \
                         % (self, p, i, i, self.out_intf_L[outInterface].mtu))
             except queue.Full:
