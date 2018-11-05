@@ -69,29 +69,6 @@ class NetworkPacket:
         data_S = byte_S[NetworkPacket.flag_length : ]
         return self(dst_addr, data_S, ID, flag)
 
-    #segment packets with an 8B offset
-    #segments are 1500 bytes long.
-    #A datagram has the fields: length, id, fragflag, and offset.
-    '''
-    def fragment(self):
-        length = int(len(data_S) / 1500) + 1
-        id = 0
-        fragFlag = 1
-        start = 0
-        stop  = 1500
-        offSet = 185
-
-        for i in range(length):
-            if  start > stop:
-                offSet += 185
-                p = NetworkPacket(dst_addr, data_S[start:stop]) #form a new packet that is equal to mtu
-                self.out_intf_L[0].put(p.to_byte_S()) #send packets always enqueued successfully
-                print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, p, self.out_intf_L[0].mtu))
-                stop   += 1500
-            start += 1500
-            stop  += 1500
-    '''
-
 ## Implements a network host for receiving and transmitting data
 class Host:
 
@@ -120,8 +97,6 @@ class Host:
         start = 0
         self.ID += 1
         stop  = mtu_I
-        print("mtu_I",mtu_I)
-        print(packets)
         
         for i in range(packets):
             if stop > len(data_S):
@@ -132,7 +107,7 @@ class Host:
                  p = NetworkPacket(dst_addr, data_S[start:stop], self.ID, 0) #form a new packet that is equal to mtu
                  
             self.out_intf_L[0].put(p.to_byte_S()) #send packets always enqueued successfully
-            print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, p, self.out_intf_L[0].mtu))
+            print('%s: sending packet "%s" on the out interface with mtu=%d\n' % (self, p, self.out_intf_L[0].mtu))
             start += mtu_I
             stop  += mtu_I
 
@@ -140,7 +115,7 @@ class Host:
     def udt_receive(self):
         pkt_S = self.in_intf_L[0].get()
         if pkt_S is not None:
-            print('%s: received packet "%s" on the in interface' % (self, pkt_S))
+            print('%s: received packet "%s" on the in interface\n' % (self, pkt_S))
 
     ## thread target for the host to keep receiving data
     def run(self):
@@ -194,8 +169,6 @@ class Router:
                         packets = 1
                     start = 0
                     stop  = mtu_I
-                    print("mtu_I",mtu_I)
-                    print(packets)
                     
                     for i in range(packets):
                         if stop > len(data_S):
@@ -206,13 +179,13 @@ class Router:
                              p = NetworkPacket(dst_addr, data_S[start:stop], ID, 0) #form a new packet that is equal to mtu
                              
                         self.out_intf_L[0].put(p.to_byte_S(), True) #send packets always enqueued successfully
-                        print('%s: sending packet "%s" on the out interface with mtu=%d' % (self, p, self.out_intf_L[0].mtu))
+                        print('%s: sending packet "%s" on the out interface with mtu=%d\n' % (self, p, self.out_intf_L[0].mtu))
                         start += mtu_I
                         stop  += mtu_I
-                    print('%s: forwarding packet "%s" from interface %d to %d with mtu %d' \
+                    print('%s: forwarding packet "%s" from interface %d to %d with mtu %d\n' \
                         % (self, p, i, i, self.out_intf_L[0].mtu))
             except queue.Full:
-                print('%s: packet "%s" lost on interface %d' % (self, p, i))
+                print('%s: packet "%s" lost on interface %d\n' % (self, p, i))
                 pass
 
     ## thread target for the host to keep forwarding data
